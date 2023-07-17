@@ -17,6 +17,8 @@ struct ContentView: View {
     @State private var errorMessage = ""
     @State private var showingError = false
     
+    @State private var score = 0
+    
     var body: some View {
         NavigationView {
             List {
@@ -36,6 +38,18 @@ struct ContentView: View {
                 }
             }
             .navigationTitle(rootWord)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Text("Score: \(score)")
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button{
+                        startGame()
+                    }label: {
+                        Text("New word")
+                    }
+                }
+            }
             .onSubmit(addNewWord)
             .onAppear(perform: startGame)
             .alert(errorTitle, isPresented: $showingError) {
@@ -43,11 +57,16 @@ struct ContentView: View {
             } message: {
                 Text(errorMessage)
             }
+            
         }
     }
     func addNewWord() {
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard answer.count > 0 else { return }
+        
+        
+        guard answer.count > 3 else {
+            wordError(title: "word too short", message: "At least 4 letters")
+            return }
         
         guard isOriginal(word: answer) else {
             wordError(title: "Word used already", message: "Be more original")
@@ -67,6 +86,7 @@ struct ContentView: View {
         withAnimation {
             usedWords.insert(answer, at: 0)
         }
+        score += (answer.count * 100)
         newWord = ""
     }
     
